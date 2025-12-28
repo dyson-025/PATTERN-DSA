@@ -1,0 +1,139 @@
+https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/description/
+
+📌 Kth Smallest Element in a Sorted Matrix
+
+(Matrix sorted row-wise & column-wise)
+
+🔹 Problem
+
+Given an n × n matrix where each row and each column is sorted, find the k-th smallest element.
+
+🧠 Key Observation
+
+Matrix is not fully sorted
+
+But rows are sorted → we can count ≤ mid efficiently
+
+The count function is monotonic
+
+Larger value → larger count
+
+👉 This allows Binary Search on VALUE SPACE
+
+🔍 Search Space
+low  = matrix[0][0]
+high = matrix[n-1][n-1]
+
+🎯 Goal
+
+Find the smallest value X such that:
+
+count(elements ≤ X) ≥ k
+
+🧩 Algorithm (Step-by-Step)
+
+Binary search on value range [low, high]
+
+For each mid, count elements ≤ mid
+
+Use upper_bound in each row
+
+Decision:
+
+If count < k → low = mid + 1
+
+Else → high = mid
+
+When low == high, that value is the answer
+
+❌ Common Mistake (VERY IMPORTANT)
+🚫 Wrong
+high = mid - 1;
+
+❗ Why wrong?
+
+mid can be the answer
+
+Removing it skips the correct value
+
+Breaks for duplicates
+
+✅ Correct Update Rule
+if (count < k)
+    low = mid + 1;
+else
+    high = mid;
+
+🧠 Difference to Remember
+Binary Search Type	Update when condition is true
+Index-based BS	high = mid - 1
+Value-based BS	high = mid
+⏱ Time & Space Complexity
+
+Time:
+
+O(n × log n × log(max - min))
+
+
+Space:
+
+O(1)
+
+✅ Correct Code (C++)
+int kthSmallest(vector<vector<int>>& matrix, int k) {
+    int n = matrix.size();
+
+    int low = matrix[0][0];
+    int high = matrix[n - 1][n - 1];
+
+    while (low < high) {
+        int mid = low + (high - low) / 2;
+        int count = 0;
+
+        for (int i = 0; i < n; i++) {
+            count += upper_bound(matrix[i].begin(),
+                                 matrix[i].end(), mid)
+                     - matrix[i].begin();
+        }
+
+        if (count < k)
+            low = mid + 1;
+        else
+            high = mid;
+    }
+
+    return low;
+}
+
+🧪 Mini Dry Run
+
+Matrix:
+
+1  5  9
+10 11 13
+12 13 15
+
+
+k = 8
+
+Sorted:
+
+1 5 9 10 11 12 13 13 15
+
+
+Answer = 13
+
+🧠 One-Line Memory Hook
+
+Kth smallest = smallest value with count ≥ k
+
+🎯 Interview Tip
+
+If asked “why does this work?”, say:
+
+“Because the count of elements ≤ mid is monotonic, enabling binary search on the answer.”
+
+🟢 Final Note
+
+This question + Matrix Median are same pattern.
+Master this once → 2 questions cleared.
