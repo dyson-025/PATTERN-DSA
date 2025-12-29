@@ -1,0 +1,36 @@
+LeetCode 756 Pyramid Transition Matrix is a backtracking + memoization problem testing state definition skills—perfect for your 1690+ LC practice and OA prep.
+https://leetcode.com/problems/pyramid-transition-matrix/submissions/1868761743/?envType=daily-question&envId=2025-12-29
+soln video: https://youtu.be/dWlpBUZDQc0?si=3mhzTy64rCYMsPyy​
+
+Core Concepts
+State: (current_bottom_row, position_idx, partial_top_row) — all 3 needed for correct memoization
+​
+
+Transitions: From bottom[i:i+2] → possible top[i] chars via allowed rules
+
+Base: Single char row (size==1) always valid ✓
+
+Time: O(7^7 * 7) → memoized O(states) passes easily
+
+Key Takeaways
+cpp
+// ✅ Correct memo key (your final version)
+string key = bottom + "_" + to_string(idx) + "_" + top;
+
+// ✅ Member map + clear() for multi-test
+unordered_map<string,bool> memo;
+memo.clear();  // Per test case
+
+// ✅ Clean map building
+mpp[s.substr(0,2)].push_back(s[2]);
+Debugging Lessons
+Test 61 fail: Proves top must be in memo key—different partial tops from same (bottom,idx) have different futures
+​
+
+Wrong key: (bottom,idx) only → TLE/WA on branching cases
+
+Syntax: allowed[i][2] not allowed[2], missing ) in returns
+
+OA Relevance
+This exact pattern appears in Deshaw/FAANG OAs—row-by-row backtracking with string state memoization. Practice 5 similar (Word Ladder II, Split Array) to master.
+​
