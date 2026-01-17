@@ -1,0 +1,75 @@
+3047. Largest Area of Square Inside Two Rectangles
+🔹 Core Idea
+
+A square can fit inside the intersection of two rectangles.
+
+So for every pair of rectangles:
+
+Find their overlapping region
+
+From that region, the largest possible square side is:
+
+side = min(overlap_width, overlap_height)
+
+
+We need the maximum side² over all pairs.
+
+🔹 Rectangle Intersection
+
+For rectangles i and j:
+
+left   = max(x1_i, x1_j)
+right  = min(x2_i, x2_j)
+bottom = max(y1_i, y1_j)
+top    = min(y2_i, y2_j)
+
+width  = right - left
+height = top - bottom
+
+
+If width <= 0 or height <= 0 → no intersection.
+
+🔹 Square Inside Intersection
+
+A square must fit completely inside the overlap:
+
+max_square_side = min(width, height)
+area = side * side
+
+🔹 Algorithm
+maxSide = 0
+for i = 0..n-1:
+  for j = i+1..n-1:
+      compute overlap width & height
+      side = min(width, height)
+      maxSide = max(maxSide, side)
+
+return maxSide * maxSide
+
+🔹 Time & Space
+Metric	Value
+Time	O(n²)
+Space	O(1)
+
+n ≤ 1000, so n² = 10⁶ → totally fine.
+
+🔹 Key Observations (Interview Points)
+
+We don’t need all rectangles, only pairs
+
+Bigger intersection ⇒ potentially bigger square
+
+Square is limited by shorter side of the overlap
+
+Intersection logic = max of starts, min of ends
+
+🔹 Common Mistakes
+
+❌ Forgetting negative width/height
+❌ Taking max(width, height) instead of min
+❌ Not using long long for area
+❌ Off-by-one in intersection boundaries
+
+🔹 Mental Formula
+
+Two rectangles → find overlap → smallest side → square → maximize
