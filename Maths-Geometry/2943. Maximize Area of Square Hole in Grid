@@ -1,0 +1,110 @@
+🧠 Problem Core Idea
+
+You have a grid formed by:
+
+n + 2 horizontal bars
+
+m + 2 vertical bars
+
+Between bars are 1×1 cells.
+
+Some bars are removable:
+
+Horizontal: hBars
+
+Vertical: vBars
+
+If you remove consecutive bars, the cells between them merge, creating a bigger hole.
+
+Goal 👉 Find the largest possible square area you can form.
+
+🔑 Key Observation
+
+To make a large square:
+
+You need consecutive removable bars in both directions.
+
+If you remove k consecutive bars → hole length becomes:
+
+side
+=
+𝑘
++
+1
+side=k+1
+
+So:
+
+Find longest consecutive sequence in hBars
+
+Find longest consecutive sequence in vBars
+
+Square side = min(horizontal_side, vertical_side)
+
+Area = side × side
+
+🧩 Why +1 ?
+
+Example:
+Bars at positions: 2,3,4 (3 consecutive removals)
+
+Cells merged = 4 units
+So side = 3 + 1 = 4
+
+🛠 Algorithm
+Step 1 – Process one direction
+Sort bars
+Scan and count longest consecutive sequence
+Answer = maxConsecutive + 1
+
+Step 2 – Combine both directions
+side = min(hSide, vSide)
+area = side * side
+
+⏱ Complexity
+
+Sorting ≤ 100 elements
+
+Time: O(k log k), k ≤ 100
+
+Space: O(1) extra
+
+n and m are large but irrelevant after input.
+
+📝 Code Logic (Explained)
+int findmaxl(vector<int>& Bars){
+    sort(Bars.begin(), Bars.end());
+    int consecutive = 1, maxl = 1;
+
+    for(int i = 1; i < Bars.size(); i++){
+        if(Bars[i] == Bars[i-1] + 1)
+            consecutive++;
+        else
+            consecutive = 1;
+
+        maxl = max(maxl, consecutive);
+    }
+    return maxl + 1;   // +1 gives actual hole size
+}
+
+int maximizeSquareHoleArea(int n, int m,
+                           vector<int>& hBars,
+                           vector<int>& vBars) {
+    int side1 = findmaxl(hBars);
+    int side2 = findmaxl(vBars);
+
+    int side = min(side1, side2);
+    return side * side;
+}
+
+🚨 Edge Cases
+
+No consecutive bars → max sequence = 1 → side = 2
+
+Single bar → still side = 2
+
+One direction large, other small → limited by smaller one.
+
+🧠 One-Line Insight
+
+Largest square = (longest consecutive horizontal removals + 1)², bounded by vertical.
