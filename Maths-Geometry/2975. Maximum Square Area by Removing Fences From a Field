@@ -1,0 +1,134 @@
+🧠 Problem Essence
+
+You have a big rectangle with fixed outer borders.
+Inside it, some horizontal and vertical fences exist.
+
+By removing some fences, you want to form the largest possible square.
+
+🔑 Key Idea
+
+A square is defined by:
+
+Two horizontal fences → vertical distance = side
+
+Two vertical fences → horizontal distance = side
+
+So the side length must appear in both:
+
+horizontal gap
+=
+vertical gap
+horizontal gap=vertical gap
+🧩 Trick
+
+Include the boundary fences (cannot be removed, but they form valid limits):
+
+Horizontal positions: {1, m}
+
+Vertical positions: {1, n}
+
+Now the problem becomes:
+
+From all horizontal fence positions, pick two → get height
+From all vertical fence positions, pick two → get width
+Find the maximum common value between these two sets of distances.
+
+🛠 Algorithm
+Step 1 – Add boundaries
+hFences += {1, m}
+vFences += {1, n}
+
+Step 2 – All possible horizontal distances
+
+Store:
+
+∣
+ℎ
+[
+𝑖
+]
+−
+ℎ
+[
+𝑗
+]
+∣
+𝑓
+𝑜
+𝑟
+𝑎
+𝑙
+𝑙
+𝑖
+<
+𝑗
+∣h[i]−h[j]∣foralli<j
+
+in a HashSet.
+
+Step 3 – Check vertical distances
+
+For every:
+
+∣
+𝑣
+[
+𝑖
+]
+−
+𝑣
+[
+𝑗
+]
+∣
+∣v[i]−v[j]∣
+
+If it exists in horizontal-set → valid square side.
+Keep the maximum.
+
+⏱ Complexity
+
+Let H = hFences size, V = vFences size.
+
+Time: O(H² + V²) ≤ 600² ≈ 3.6e5 (safe)
+
+Space: O(H²)
+
+📝 Code Logic (Your Solution)
+hFences.push_back(m);
+hFences.push_back(1);
+vFences.push_back(1);
+vFences.push_back(n);
+
+unordered_set<int> st;
+for(int i=0;i<hFences.size();i++){
+    for(int j=i+1;j<hFences.size();j++){
+        int width = abs(hFences[i]-hFences[j]);
+        st.insert(width);
+    }
+}
+
+int maxs = -1;
+for(int i=0;i<vFences.size();i++){
+    for(int j=i+1;j<vFences.size();j++){
+        int width = abs(vFences[i]-vFences[j]);
+        if(st.count(width)){
+            maxs = max(maxs,width);
+        }
+    }
+}
+
+if(maxs==-1) return -1;
+return (1LL*maxs*maxs) % mod;
+
+🚨 Important Notes
+
+Unlike 2943, here we do not need consecutive fences.
+
+Any two fences matter → distances are key.
+
+If no common distance exists → answer = -1.
+
+🧠 One-Line Insight
+
+Largest square side = maximum common distance between any two horizontal and vertical fences.
