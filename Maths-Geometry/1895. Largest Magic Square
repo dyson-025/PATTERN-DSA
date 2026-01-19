@@ -1,0 +1,132 @@
+🧠 Problem Idea
+
+A k × k Magic Square means:
+
+All row sums = same
+
+All column sums = same
+
+Both diagonals sums = same
+
+Brute force is allowed because:
+
+m, n ≤ 50
+
+Max square size ≤ 50
+
+⚙️ Strategy
+
+For every possible square size k:
+
+Try every top-left corner (i, j)
+
+Check:
+
+All k rows
+
+All k columns
+
+2 diagonals
+
+If all sums match → valid magic square
+
+✅ Implementation
+class Solution {
+public:
+    bool check(int i, int j, int k, vector<vector<int>>& grid){
+        int sum = 0;
+
+        // Check rows
+        for (int r = i; r < i + k; r++) {
+            int s = 0;
+            for (int c = j; c < j + k; c++) {
+                s += grid[r][c];
+            }
+            if (r == i) sum = s;
+            else if (s != sum) return false;
+        }
+
+        // Check columns
+        for (int c = j; c < j + k; c++) {
+            int s = 0;
+            for (int r = i; r < i + k; r++) {
+                s += grid[r][c];
+            }
+            if (s != sum) return false;
+        }
+
+        // Main diagonal
+        int s = 0;
+        for (int d = 0; d < k; d++) {
+            s += grid[i + d][j + d];
+        }
+        if (s != sum) return false;
+
+        // Secondary diagonal
+        s = 0;
+        for (int d = 0; d < k; d++) {
+            s += grid[i + d][j + k - 1 - d];
+        }
+        if (s != sum) return false;
+
+        return true;
+    }
+
+    int largestMagicSquare(vector<vector<int>>& grid) {
+        int n = grid.size(), m = grid[0].size();
+        int ans = 1;
+
+        for (int k = 2; k <= min(n, m); k++) {
+            for (int i = 0; i + k <= n; i++) {
+                for (int j = 0; j + k <= m; j++) {
+                    if (check(i, j, k, grid)) {
+                        ans = k;
+                    }
+                }
+            }
+        }
+        return ans;
+    }
+};
+
+⏱️ Time Complexity
+
+Let:
+
+N = rows
+
+M = columns
+
+K = min(N, M)
+
+For each k, we check all possible squares:
+
+Total = Σ (k from 2..K) [ (N-k+1)*(M-k+1) * O(k) ]
+
+
+Worst case (N = M = 50):
+
+≈ O(N^4)  ≈ 50^4 = 6.25M operations
+
+
+Which is totally fine.
+
+💡 Space Complexity
+O(1) extra space
+
+
+(Only counters used, no extra arrays.)
+
+📌 Key Takeaways
+
+1×1 is always magic → answer ≥ 1
+
+Always verify:
+
+Rows
+
+Columns
+
+Both diagonals
+
+Careful with loop variables (your earlier bug 😄)
