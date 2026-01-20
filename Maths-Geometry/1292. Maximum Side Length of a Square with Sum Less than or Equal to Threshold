@@ -1,0 +1,161 @@
+🔢 Problem Summary
+
+Given a matrix mat (m x n) and an integer threshold, find the maximum side length of a square submatrix whose sum ≤ threshold.
+
+If no such square exists → return 0.
+
+💡 Core Idea
+
+Brute force square sum = too slow
+
+Use 2D Prefix Sum to calculate any submatrix sum in O(1)
+
+🧠 2D Prefix Sum Formula
+
+Let prefix[i][j] be sum of matrix from (0,0) to (i,j).
+
+prefix[i][j] =
+    mat[i][j]
+  + prefix[i-1][j]
+  + prefix[i][j-1]
+  - prefix[i-1][j-1]
+
+Sum of square (r1,c1) → (r2,c2)
+sum =
+  prefix[r2][c2]
+- prefix[r1-1][c2]
+- prefix[r2][c1-1]
++ prefix[r1-1][c1-1]
+
+✅ Approach 1: Prefix Sum + Brute Expansion
+🔹 Idea
+
+Fix top-left corner
+
+Increase square size until sum exceeds threshold
+
+Keep track of best valid side
+
+🔹 Optimization
+
+Start expanding from current best size → avoids unnecessary checks.
+
+⏱ Complexity
+
+Time: O(m × n × min(m,n))
+
+Space: O(m × n)
+
+🧩 Code
+class Solution {
+public:
+    int maxSideLength(vector<vector<int>>& mat, int threshold) {
+        int rows = mat.size(), cols = mat[0].size();
+        vector<vector<int>> prefix(rows, vector<int>(cols, 0));
+
+        // Build prefix sum
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                prefix[i][j] = mat[i][j]
+                             + (i > 0 ? prefix[i - 1][j] : 0)
+                             + (j > 0 ? prefix[i][j - 1] : 0)
+                             - (i > 0 && j > 0 ? prefix[i - 1][j - 1] : 0);
+            }
+        }
+
+        auto getSum = [&](int r1, int c1, int r2, int c2) {
+            int sum = prefix[r2][c2];
+            if (r1 > 0) sum -= prefix[r1 - 1][c2];
+            if (c1 > 0) sum -= prefix[r2][c1 - 1];
+            if (r1 > 0 && c1 > 0) sum += prefix[r1 - 1][c1 - 1];
+            return sum;
+        };
+
+        int best = 0;
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                for (int k = best; i + k < rows && j + k < cols; k++) {
+                    if (getSum(i, j, i + k, j + k) <= threshold)
+                        best = k + 1;
+                    else
+                        break;
+                }
+            }
+        }
+        return best;
+    }
+};
+
+✅ Approach 2: Prefix Sum + Binary Search (Optimal)
+🔹 Idea
+
+Binary search on side length
+
+Check if any square of size mid satisfies condition
+
+🔹 Why Binary Search?
+
+If square of size k is valid → all sizes < k are also valid.
+
+⏱ Complexity
+
+Time: O(m × n × log(min(m,n)))
+
+Space: O(m × n)
+
+🧩 Code
+class Solution {
+public:
+    int maxSideLength(vector<vector<int>>& mat, int threshold) {
+        int rows = mat.size(), cols = mat[0].size();
+        vector<vector<int>> prefix(rows, vector<int>(cols, 0));
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                prefix[i][j] = mat[i][j]
+                             + (i > 0 ? prefix[i - 1][j] : 0)
+                             + (j > 0 ? prefix[i][j - 1] : 0)
+                             - (i > 0 && j > 0 ? prefix[i - 1][j - 1] : 0);
+            }
+        }
+
+        auto getSum = [&](int r1, int c1, int r2, int c2) {
+            int sum = prefix[r2][c2];
+            if (r1 > 0) sum -= prefix[r1 - 1][c2];
+            if (c1 > 0) sum -= prefix[r2][c1 - 1];
+            if (r1 > 0 && c1 > 0) sum += prefix[r1 - 1][c1 - 1];
+            return sum;
+        };
+
+        auto valid = [&](int side) {
+            for (int i = 0; i + side - 1 < rows; i++) {
+                for (int j = 0; j + side - 1 < cols; j++) {
+                    if (getSum(i, j, i + side - 1, j + side - 1) <= threshold)
+                        return true;
+                }
+            }
+            return false;
+        };
+
+        int lo = 1, hi = min(rows, cols), ans = 0;
+        while (lo <= hi) {
+            int mid = lo + (hi - lo) / 2;
+            if (valid(mid)) {
+                ans = mid;
+                lo = mid + 1;
+            } else {
+                hi = mid - 1;
+            }
+        }
+        return ans;
+    }
+};
+
+🧠 When to Use Which?
+Scenario	Best Approach
+Small constraints	Approach 1
+Large constraints	Approach 2 (Recommended)
+📌 One-Line Takeaway
+
+2D Prefix Sum + Binary Search is the cleanest and fastest solution for this problem.
