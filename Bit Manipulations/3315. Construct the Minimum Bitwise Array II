@@ -1,0 +1,212 @@
+
+1️⃣ Problem restated in simple words
+
+You are given an array nums of prime numbers.
+
+For each nums[i], you must find the smallest non-negative integer x such that:
+
+x OR (x + 1) == nums[i]
+
+
+If no such x exists, return -1.
+
+2️⃣ Key observation about x OR (x + 1)
+
+This is the heart of the problem.
+
+Let’s look at what happens when you do:
+
+x OR (x + 1)
+
+🔑 Binary behavior of x + 1
+
+When you add 1 to x:
+
+The rightmost 0 bit in x becomes 1
+
+All bits to the right of it become 0
+
+Example:
+
+x      = 100111
+x + 1  = 101000
+OR     = 101111
+
+
+👉 Result rule:
+
+x OR (x + 1)
+= all bits same as x,
+except from the rightmost 0 bit onward, all bits become 1
+
+3️⃣ What numbers can be written as x OR (x + 1)?
+
+From the rule above:
+
+The result must look like:
+
+[some prefix][all 1s at the end]
+
+
+Examples:
+
+3  = 11
+5  = 101
+7  = 111
+11 = 1011
+13 = 1101
+31 = 11111
+
+
+❌ Numbers like:
+
+2 = 10
+4 = 100
+8 = 1000
+
+
+cannot be formed.
+
+4️⃣ Why nums[i] == 2 gives -1
+2 = 10 (binary)
+
+
+There is no x such that:
+
+x OR (x+1) = 10
+
+
+So:
+
+ans[i] = -1
+
+
+(That’s why nums[i] == 2 is impossible.)
+
+5️⃣ How to find the minimum x for a valid nums[i]
+
+We want the smallest x, so we want to:
+
+Change as few high bits as possible
+
+Modify the lowest possible bit
+
+🔑 Strategy
+
+Scan bits of nums[i] from LSB to MSB
+
+Find the first 0 bit at position j
+
+Flip the bit just below it (j-1) to 0
+
+Keep everything else same
+
+Why this works:
+
+That 0 at position j will become the rightmost zero
+
+OR with (x+1) fills everything correctly
+
+This produces the minimum possible x
+
+6️⃣ Example walkthrough
+Example: nums[i] = 5
+
+Binary:
+
+5 = 101
+
+
+First 0 bit from right → position 1
+
+Flip bit 0:
+
+x = 100 = 4
+x+1 = 101
+OR  = 101 = 5
+
+
+✅ Works, and it’s minimal.
+
+Example: nums[i] = 7
+7 = 111
+
+
+First 0 bit is at position 3
+
+Flip bit 2:
+
+x = 011 = 3
+x+1 = 100
+OR  = 111 = 7
+
+
+✅ Works.
+
+7️⃣ Common mistakes (you faced these already)
+❌ Operator precedence
+nums[i] & (1 << j) == 0   // WRONG
+
+
+Must be:
+
+( nums[i] & (1 << j) ) == 0
+
+❌ Shifting by j-1 when j == 0
+1 << (j - 1)   // undefined if j == 0
+
+
+So start j from 1, not 0.
+
+8️⃣ Final Correct C++ Code (Editorial Style)
+class Solution {
+public:
+    vector<int> minBitwiseArray(vector<int>& nums) {
+        vector<int> ans(nums.size(), -1);
+
+        for (int i = 0; i < nums.size(); i++) {
+            // nums[i] == 2 is impossible
+            if (nums[i] == 2) continue;
+
+            // find first zero bit (from LSB)
+            for (int j = 1; j < 32; j++) {
+                // correct bit check
+                if ((nums[i] & (1 << j)) == 0) {
+                    // flip bit (j-1)
+                    ans[i] = nums[i] ^ (1 << (j - 1));
+                    break;
+                }
+            }
+        }
+        return ans;
+    }
+};
+
+9️⃣ Why this always gives the minimum x
+
+We flip the lowest possible bit
+
+Higher bits stay unchanged
+
+Any other solution would flip a higher bit → larger number
+
+So this is guaranteed minimal.
+
+🔟 One-line memory rule (PIN THIS)
+
+x OR (x+1) fills 1s from the rightmost zero —
+to minimize x, remove the lowest 1 before that zero.
+
+🏆 What this problem teaches you
+
+Bitwise OR patterns
+
+Binary carry behavior
+
+Operator precedence traps
+
+How to “reverse engineer” bit operations
+
+Why intuition must be backed by bit-level proof
+
+This is proper Medium-level thinking, and you handled it well.
