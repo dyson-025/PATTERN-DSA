@@ -1,0 +1,207 @@
+3510. Minimum Pair Removal to Sort Array II
+Problem (in simple words)
+
+You are given an array.
+You can repeatedly:
+
+Pick the adjacent pair with minimum sum
+
+Replace it with their sum
+
+Do this until the array becomes non-decreasing.
+Return the minimum number of operations.
+
+Key Observations / Intuition
+1. Operation is forced (no choice)
+
+You must always pick the pair with minimum sum.
+So this is not a typical greedy choice — the order is fixed by problem.
+
+We just need to simulate efficiently.
+
+2. What makes array "bad"?
+
+Define:
+
+bad pair = i where nums[i] > nums[i+1]
+
+
+We just need to remove all bad pairs.
+
+3. Naive simulation is too slow
+
+Brute:
+
+Find min adjacent sum → O(n)
+
+Remove → O(n)
+
+Repeat → up to n times
+Total = O(n²) ❌ (n up to 1e5)
+
+Optimized Strategy
+
+We simulate a linked list + priority queue (set).
+
+Data Structures
+Structure	Why
+set<pair<sum, index>>	Get min adjacent pair in O(log n)
+nextIndex[]	Right neighbor
+prevIndex[]	Left neighbor
+temp[]	Current values after merges
+
+This avoids shifting the array.
+
+Core Idea
+
+Maintain:
+
+All adjacent sums in a set
+
+Number of badPairs
+
+While badPairs > 0:
+
+Take minimum sum pair (i, i+1)
+
+Merge them into index i
+
+Update:
+
+neighbors
+
+affected sums in set
+
+badPairs count
+
+How badPairs changes
+
+Only 3 places affected when merging (a,b):
+
+... L , a , b , R ...
+
+
+Check:
+
+Was (a,b) itself bad?
+
+Was (L,a) bad before vs (L,a+b) after?
+
+Was (b,R) bad before vs (a+b,R) after?
+
+So each operation is O(1) logic.
+
+Time & Space Complexity
+Metric	Value
+Time	O(n log n)
+Space	O(n)
+
+Works for 1e5.
+
+Why this greedy is correct?
+
+Because the problem forces you to always pick the minimum sum pair.
+There is no alternative strategy — we only simulate optimally.
+
+Common Pitfalls
+1. Forgetting to remove old pairs from set
+
+After merge, old pairs like:
+
+(L,a)
+
+(b,R)
+must be erased.
+
+2. Using vector erase → TLE
+
+Must use linked list style (next/prev arrays).
+
+3. Negative numbers
+
+Sums can go negative → must use long long.
+
+Mental Model (easy to remember)
+
+Think like:
+
+“I maintain a chain of numbers.
+Always glue the cheapest adjacent two.
+Keep updating only local relations.”
+
+Clean Final Code (Core Version)
+
+This is your same logic but slightly cleaned for revision:
+
+class Solution {
+public:
+    typedef long long ll;
+
+    int minimumPairRemoval(vector<int>& nums) {
+        int n = nums.size();
+        vector<ll> temp(nums.begin(), nums.end());
+
+        set<pair<ll,int>> st;
+        vector<int> next(n), prev(n);
+
+        for(int i=0;i<n;i++){
+            next[i]=i+1;
+            prev[i]=i-1;
+        }
+
+        int badPairs = 0;
+        for(int i=0;i<n-1;i++){
+            if(temp[i] > temp[i+1]) badPairs++;
+            st.insert({temp[i]+temp[i+1], i});
+        }
+
+        int ops = 0;
+
+        while(badPairs > 0){
+            auto [sum, i] = *st.begin();
+            st.erase(st.begin());
+
+            int j = next[i];
+            int L = prev[i];
+            int R = next[j];
+
+            // remove bad (i,j)
+            if(temp[i] > temp[j]) badPairs--;
+
+            // left side
+            if(L >= 0){
+                if(temp[L] > temp[i] && temp[L] <= temp[i]+temp[j]) badPairs--;
+                else if(temp[L] <= temp[i] && temp[L] > temp[i]+temp[j]) badPairs++;
+            }
+
+            // right side
+            if(R < n){
+                if(temp[R] >= temp[j] && temp[R] < temp[i]+temp[j]) badPairs++;
+                else if(temp[R] < temp[j] && temp[R] >= temp[i]+temp[j]) badPairs--;
+            }
+
+            // update set
+            if(L >= 0){
+                st.erase({temp[L]+temp[i], L});
+                st.insert({temp[L]+temp[i]+temp[j], L});
+            }
+
+            if(R < n){
+                st.erase({temp[j]+temp[R], j});
+                st.insert({temp[i]+temp[j]+temp[R], i});
+                prev[R] = i;
+            }
+
+            next[i] = R;
+            temp[i] += temp[j];
+
+            ops++;
+        }
+
+        return ops;
+    }
+};
+
+One-Line Summary (for last-day revision)
+
+Use a set for minimum adjacent sum, simulate array with linked list, track bad pairs, update only local neighbors → O(n log n).
