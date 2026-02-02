@@ -1,0 +1,246 @@
+🔷 Problem Recap
+
+We are given:
+
+Array nums[0 … n-1]
+
+Integers k (number of subarrays)
+
+Integer dist
+
+We must split nums into k contiguous subarrays.
+
+If their starting indices are:
+
+0, i1, i2, ..., ik-1
+
+
+Then the condition is:
+
+ik-1 - i1 ≤ dist
+
+
+Cost of a subarray = its first element
+
+Total cost:
+
+nums[0] + nums[i1] + nums[i2] + ... + nums[ik-1]
+
+
+We want to minimize this.
+
+🔷 Key Observation
+
+nums[0] is always included.
+
+So we need to choose (k−1) other starting positions:
+
+i1 , i2 , ... , ik-1
+
+
+such that
+
+i1 ≥ 1
+ik-1 ≤ i1 + dist
+
+
+So all k−1 picks must lie inside some window of size dist+1 in:
+
+nums[1 … n−1]
+
+
+We want to minimize:
+
+nums[i1] + nums[i2] + ... + nums[ik-1]
+
+
+This becomes:
+
+From every sliding window of length dist+1 in nums[1…n−1], find the sum of the smallest (k−1) numbers.
+Take the minimum over all windows.
+
+🔷 Sliding Window + Two Sets
+
+We maintain a window of indices:
+
+[left … right]  of size ≤ dist+1
+
+
+Inside the window we need the k−1 smallest elements.
+
+We use two ordered sets:
+
+Set	Purpose
+kMinimum	stores the smallest (k−1) elements
+remaining	stores all other elements
+
+We also keep:
+
+sum = sum of elements in kMinimum
+
+🔷 Invariant
+
+At all times:
+
+kMinimum contains the smallest (k−1) elements in current window
+
+sum is their total
+
+🔷 Initialization
+
+We start from index 1 because nums[0] is fixed.
+
+We fill the first valid window:
+
+indices: 1 … dist+1
+
+
+For each element:
+
+Insert into kMinimum
+
+If size > k−1
+→ remove the largest element and put it in remaining
+
+🔷 Sliding the Window
+
+For every new index i:
+
+1️⃣ Add new element
+
+Insert (nums[i], i) into kMinimum
+
+If size exceeds k−1, move the largest into remaining.
+
+Update sum.
+
+2️⃣ Update answer
+
+We now have a valid window.
+Update:
+
+result = min(result, sum)
+
+3️⃣ Remove old element
+
+The element leaving the window is:
+
+(nums[i-dist], i-dist)
+
+
+If it is in kMinimum:
+
+remove it
+
+decrease sum
+
+move the smallest from remaining into kMinimum
+
+Else remove it from remaining
+
+This keeps kMinimum always holding the smallest k−1 elements.
+
+🔷 Final Answer
+answer = nums[0] + result
+
+🔷 Why this Works
+
+Because:
+
+We try all valid windows of length dist+1
+
+From each, we choose the smallest possible k−1 starts
+
+Sliding window guarantees optimal coverage
+
+🔷 Time & Space Complexity
+Metric	Value
+Time	O(n log k)
+Space	O(k)
+🔷 Mental Model
+
+We are choosing k−1 cheapest starting points from a moving window of allowed indices.
+
+🔷 Competitive Programming Pattern
+
+This problem is a classic:
+
+“Sliding Window + k-smallest elements”
+
+Used in:
+
+Median of sliding window
+
+k smallest sum in subarray
+
+Dynamic minimum sum
+
+🔷 Full C++ Code (CP Template Style)
+class Solution {
+public:
+    typedef long long ll;
+    typedef pair<ll,ll> P;
+
+    ll minimumCost(vector<int>& nums, int k, int dist) {
+        int n = nums.size();
+
+        set<P> kMinimum;    // smallest (k-1) elements
+        set<P> remaining;  // all other elements
+
+        ll sum = 0;        // sum of elements in kMinimum
+
+        int i = 1;
+
+        // Build initial window [1 .. dist+1]
+        while (i - dist < 1) {
+            kMinimum.insert({nums[i], i});
+            sum += nums[i];
+
+            if (kMinimum.size() > k - 1) {
+                auto it = prev(kMinimum.end());  // largest in kMinimum
+                sum -= it->first;
+                remaining.insert(*it);
+                kMinimum.erase(it);
+            }
+            i++;
+        }
+
+        ll result = LLONG_MAX;
+
+        while (i < n) {
+            // Add nums[i]
+            kMinimum.insert({nums[i], i});
+            sum += nums[i];
+
+            if (kMinimum.size() > k - 1) {
+                auto it = prev(kMinimum.end());
+                sum -= it->first;
+                remaining.insert(*it);
+                kMinimum.erase(it);
+            }
+
+            result = min(result, sum);
+
+            // Remove element leaving the window
+            P rem = {nums[i - dist], i - dist};
+
+            if (kMinimum.count(rem)) {
+                kMinimum.erase(rem);
+                sum -= rem.first;
+
+                if (!remaining.empty()) {
+                    auto it = remaining.begin(); // smallest from remaining
+                    kMinimum.insert(*it);
+                    sum += it->first;
+                    remaining.erase(it);
+                }
+            } else {
+                remaining.erase(rem);
+            }
+
+            i++;
+        }
+
+        return nums[0] + result;
+    }
+};
