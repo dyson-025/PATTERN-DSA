@@ -1,0 +1,62 @@
+Intuition
+We want the smallest number made only of 1s (like 1, 11, 111, 1111...) that is divisible by k.
+
+We can’t actually build numbers like 1, 11, 111… because they grow extremely fast.
+To check divisibility, we don’t need the whole number ,we just need the remainder.
+
+Also, there’s one simple observation:
+Any number made only of 1’s always ends with 1, so it can never be divisible by 2 or 5.
+That means if k has 2 or 5 as a factor, we already know the answer is -1.
+
+Instead of creating the actual number, we grow it one digit at a time just by tracking its remainder.
+
+If the current remainder is rem and we append another 1, the new remainder becomes:
+rem = (rem * 10 + 1) % k
+
+This is basically simulating the numbers 1, 11, 111, 1111… but without ever storing the full value.
+
+Now, why do we only loop up to k times?
+Because there are only k possible remainders: 0, 1, 2, ..., k-1.
+
+If we go beyond k steps, some remainder will repeat, which means we’ve entered a cycle and will never reach a remainder of 0.
+
+So if we don’t hit 0 within those k checks, it’s never going to happen.
+
+just return -1 at the end.
+
+Approach
+If k == 1 → answer is 1.
+If k is divisible by 2 or 5 → return -1.
+
+Start with remainder 0.
+
+For each length i from 1 to k:
+
+Update remainder:
+rem = (rem * 10 + 1) % k
+
+If remainder becomes 0, we found the answer → return i.
+
+If we finish the loop, no such number made only of 1s exists → return -1.
+
+Complexity
+Time complexity: O(k)
+
+Space complexity: O(1)
+
+Code
+class Solution {
+    public int smallestRepunitDivByK(int k) {
+        if(k==1) return 1;
+
+        // Numbers made of only 1s can NEVER be divisible by 2 or 5
+        if(k%2==0 || k%5==0) return -1;
+
+        int rem = 0;
+        for(int i=1;i<=k;i++){
+            rem = (rem*10+1)%k;
+            if(rem==0) return i;
+        }
+        return -1;
+    }
+}
